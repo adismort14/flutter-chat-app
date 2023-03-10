@@ -1,6 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'chat_screen.dart';
 
@@ -12,7 +13,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _auth = FirebaseAuth.instance;
+  // final _auth = FirebaseAuth.instance;
+  final supabase = Supabase.instance.client;
   bool showSpinner = false;
   late String email;
   late String password;
@@ -114,10 +116,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() {
                           showSpinner = true;
                         });
-                        final userCredentials =
-                            await _auth.signInWithEmailAndPassword(
-                                email: email, password: password);
-                        if (userCredentials != null) {
+
+                        final AuthResponse res =
+                            await supabase.auth.signInWithPassword(
+                          email: email,
+                          password: password,
+                        );
+                        if (res != null) {
                           Navigator.pushNamed(context, ChatScreen.id);
                         }
                         setState(() {

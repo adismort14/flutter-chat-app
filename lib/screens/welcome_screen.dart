@@ -1,6 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flash_chat/screens/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'registration_screen.dart';
 
@@ -12,9 +12,18 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
+  Future<void> supa_init() async {
+    await Supabase.initialize(
+      url: 'https://pnelesjftdrfpkxdeuss.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuZWxlc2pmdGRyZnBreGRldXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzg0NjQxMTIsImV4cCI6MTk5NDA0MDExMn0.fYbGbJvsDJvNd-Xzrt9WlcAjRmJ7_LHkzf4gbv_y80E',
+    );
+  }
+
   void initState() {
     super.initState();
-    Firebase.initializeApp().whenComplete(() => setState(() {}));
+    // Firebase.initializeApp().whenComplete(() => setState(() {}));
+    supa_init();
   }
 
   @override
