@@ -4,6 +4,10 @@ import 'package:flash_chat/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final supabase = Supabase.instance.client;
+User loggedUser = supabase.auth.currentUser!;
+bool senderIsMe = true;
+
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat';
 
@@ -13,10 +17,9 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   // final _userInstance = FirebaseFirestore.instance;
-  final supabase = Supabase.instance.client;
+
   // final _auth = FirebaseAuth.instance;
   final messageTextController = TextEditingController();
-  late User loggedUser;
   late String message;
   late final _stream;
 
@@ -25,13 +28,13 @@ class _ChatScreenState extends State<ChatScreen> {
     // print(loggedUser.email);
   }
 
-  void getMessages() async {
-    var messages = await supabase.from("Messages").select('message_content');
-    // for (var message in messages) {
-    //   print(message);
-    // }
-    print(messages);
-  }
+  // void getMessages() async {
+  //   var messages = await supabase.from("Messages").select('message_content');
+  //   // for (var message in messages) {
+  //   //   print(message);
+  //   // }
+  //   print(messages);
+  // }
 
   // void getStream() async {
   //   await for (var snapshot
@@ -43,14 +46,14 @@ class _ChatScreenState extends State<ChatScreen> {
   //   ;
   // }
 
-  void getStream() async {
-    await supabase
-        .from('Messages')
-        .stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
-      // Do something awesome with the data
-      print(data);
-    });
-  }
+  // void getStream() async {
+  //   await supabase
+  //       .from('Messages')
+  //       .stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
+  //     // Do something awesome with the data
+  //     print(data);
+  //   });
+  // }
 
   void initState() {
     super.initState();
@@ -67,12 +70,11 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.close),
-              onPressed: () {
-                getStream();
-                //Implement logout functionality
-                // await _auth.signOut();
-                // Navigator.pop(context);
+              onPressed: () async {
                 // getStream();
+                //Implement logout functionality
+                await supabase.auth.signOut();
+                Navigator.pop(context);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -90,10 +92,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       var messages = snapshot.data as List ?? [];
-                      print(1);
-                      print(messages);
+                      // print(1);
+                      // print(messages);
                       List<MessageBubble> messageBubbles = [];
-                      for (var message in messages) {
+                      for (var message in messages.reversed) {
                         var messageContent = message['message_content'];
                         var messageSender = message['sender_mail'];
                         MessageBubble messageBubble = MessageBubble(
@@ -104,6 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       }
                       return Expanded(
                         child: ListView(
+                          reverse: true,
                           children: messageBubbles,
                         ),
                       );
@@ -166,16 +169,27 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: loggedUser.email == sender
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Text(
             sender,
             style: TextStyle(color: Colors.grey, fontSize: 10),
           ),
           Material(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: loggedUser.email == sender
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30))
+                : BorderRadius.only(
+                    topRight: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30)),
             elevation: 5.0,
-            color: Colors.lightBlue,
+            color:
+                loggedUser.email == sender ? Colors.lightBlue : Colors.purple,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
               child: Text(
